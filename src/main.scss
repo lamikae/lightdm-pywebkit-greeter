@@ -1,0 +1,22 @@
+body {
+    font: 3em Times, sans-serif;
+    padding: 0.7em 1em;
+    background: url('bg.jpg');
+    background-size: 100% 100%;
+    background-attachment: fixed;
+    display: block;
+    text-align: center;
+    color: #eee;
+}
+.prompt {
+    margin: 0 auto;
+}
+input {
+    font-size: 1em;
+}
+#loginStatus p {
+    margin: 0;
+}
+#loginStatus img {
+    margin: 0 auto;
+}
