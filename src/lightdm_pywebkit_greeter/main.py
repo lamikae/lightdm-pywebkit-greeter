@@ -17,7 +17,7 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 import gi
 gi.require_version('WebKit', '3.0')
 from gi.repository import GObject, Gtk, Gdk, WebKit, LightDM
-import os, sys
+import os, sys, re
 from time import sleep
 
 class Greeter(object):
@@ -94,7 +94,6 @@ class Greeter(object):
             self.do_login()
 
         except Exception, e:
-            print str(e)
             # fail without bothering LightDM
             self.fail(str(e))
         return False
@@ -117,12 +116,10 @@ class Greeter(object):
                 start_session()
             elif self.greeter.get_in_authentication():
                 self.log("username was passed in already, send password to LightDM")
-                if not self.greeter.respond(self.password):
-                    self.fail()
+                self.greeter.respond(self.password)
             else:
                 self.log("Initial entry of username, send it to LightDM")
-                if not self.greeter.authenticate(self.username):
-                    self.fail()
+                self.greeter.authenticate(self.username)
         except Exception, e:
             self.log(e)
 
@@ -133,13 +130,15 @@ class Greeter(object):
         self.view.execute_script("ui.fail('%s');" % message)
 
     def reset(self):
+        self.username = None
+        self.password = None
         self.view.execute_script("ui.reset();")
 
     # The show_prompt callback is oddly named, but when you get this
     # callback you are supposed to send the password to LightDM next.
     def show_prompt_cb(self, greeter, text, promptType):
-        self.log("show_prompt_cb")
-        self.log("prompt type: %s" % promptType)
+        #self.log("show_prompt_cb")
+        #self.log("prompt type: %s" % promptType)
         # if this is a password orompt, we want to hide the characters
         if promptType == LightDM.PromptType.SECRET:
             pass
@@ -148,7 +147,7 @@ class Greeter(object):
 
     def show_message_cb(self, greeter, text, type):
         """Show LightDM message in the greeter."""
-        self.log("show_message_cb")
+        #self.log("show_message_cb")
         self.show_message(text)
 
     def authentication_complete_cb(self, greeter):
@@ -157,7 +156,7 @@ class Greeter(object):
         Successful login starts the session,
         failed login notifies the user.
         """
-        self.log("authentication_complete_cb")
+        self.log("Authentication complete")
         if self.greeter.get_is_authenticated():
             session = self.read_configured_session()
             if self.greeter.start_session_sync(session):
@@ -167,19 +166,20 @@ class Greeter(object):
         else:
             self.fail("Authentication failed")
 
-    # HACK
     def read_configured_session(self):
+        """Read user-session configured in /etc/lightdm/lightdm.conf."""
         try:
             f = open("/etc/lightdm/lightdm.conf", 'r')
             lightdm_conf = f.read()
             f.close()
-            import re
-            match = re.search(r'greeter-session=(.*)', lightdm_conf)
-            return match.group(1)
+            match = re.search(r'^user-session=(.*)', lightdm_conf, re.MULTILINE)
+            session = match.group(1)
+            self.log("Launching user session %s" % session)
+            return session
 
         except Exception, e:
             self.log(e)
-            return "gnome-session"
+            return "gnome"
 
     def log(self, text):
         print >> sys.stderr, text
