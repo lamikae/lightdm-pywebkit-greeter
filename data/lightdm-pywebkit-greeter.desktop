@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=LightDM WebKit Greeter for LTSP systems
+Name=LightDM WebKit Greeter
 Comment=
 Exec=python -m lightdm_pywebkit_greeter.main
 Type=Application
