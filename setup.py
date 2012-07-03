@@ -6,7 +6,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(name="lightdm_pywebkit_greeter",
-      version='0.1.0',
+      version='0.1.1',
       maintainer="lamikae",
       maintainer_email="",
       license="GPL-2",
